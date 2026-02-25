@@ -37,10 +37,29 @@ router.post("/session", async(req, res)=>{
 
 //Get all sessions
 router.get("/session", async(req, res)=>{
+    const {focus, duration_minutes} = req.query
+    let query = "SELECT * FROM training_sessions"
+    let conditions = []
+    let values = [] 
+    
+    if(focus){
+        values.push(focus)
+        conditions.push(`focus = $${values.length}`)
+    }
+    if(duration_minutes){
+        values.push(duration_minutes)
+        conditions.push(`duration_minutes = $${values.length}`)
+    }
+    if(conditions.length > 0){
+        query += " WHERE " + conditions.join(" AND ")
+    }
+
+    query += " ORDER BY session_date DESC"
     try {
         const result = await pool.query(
-            `SELECT * FROM training_sessions
-            `)
+            query,
+            values
+        )
         res.status(200).json(result.rows)
     } catch (error) {
         
